@@ -1,0 +1,52 @@
+# create a new RG
+
+$location = (Get-AzResourceGroup -Name <az104-03b-rg1>).Location
+
+$rgName = '<az104-03c-rg1>'
+
+New-AzResourceGroup -Name $rgName -Location $location
+
+
+# get properties
+
+Get-AzResourceGroup -Name $rgName
+
+
+# create a new managed disk
+
+$diskConfig = New-AzDiskConfig `
+-Location $location `
+-CreateOption Empty `
+-DiskSizeGB 32 `
+-Sku Standard_LRS
+
+$diskName = 'az104-03c-disk1'
+
+New-AzDisk `
+-ResourceGroupName $rgName `
+-DiskName $diskName `
+-Disk $diskConfig
+
+
+# retrieve properties
+Get-AzDisk -ResourceGroupName $rgName -Name $diskName
+
+
+# increase the size of the Azure managed disk to 64 GB
+
+New-AzDiskUpdateConfig -DiskSizeGB 64 | Update-AzDisk -ResourceGroupName $rgName -DiskName $diskName
+
+
+# verify the current SKU as Standard_LRS
+
+(Get-AzDisk -ResourceGroupName $rgName -Name $diskName).Sku
+
+
+# change the disk performance SKU to Premium_LRS
+
+New-AzDiskUpdateConfig -Sku Premium_LRS | Update-AzDisk -ResourceGroupName $rgName -DiskName $diskName
+
+
+# verify that the change
+
+(Get-AzDisk -ResourceGroupName $rgName -Name $diskName).Sku
